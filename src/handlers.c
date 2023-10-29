@@ -151,7 +151,19 @@ void _aylin_on_wl_surface_frame_done(void *data,
 }
 
 void _aylin_on_zwlr_surface_closed(
-    void *data, struct zwlr_layer_surface_v1 *layer_surface) {}
+    void *data, struct zwlr_layer_surface_v1 *layer_surface) {
+  struct aylin_shell *shell = data;
+
+  if (!shell)
+    return;
+
+  if (!shell->listener->close) {
+    printf("error@1 missing close handler\n");
+    exit(EXIT_FAILURE);
+  }
+
+  shell->listener->close(shell, shell->_userdata);
+}
 
 void _aylin_on_zwlr_surface_configure(
     void *data, struct zwlr_layer_surface_v1 *layer_surface, uint32_t serial,
