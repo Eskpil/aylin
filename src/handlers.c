@@ -48,6 +48,20 @@ void _aylin_on_xdg_wm_base_ping(void *data, struct xdg_wm_base *wm_base,
   xdg_wm_base_pong(wm_base, serial);
 }
 
+void _aylin_on_xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
+  struct aylin_shell *shell = data;
+
+  if (!shell)
+    return;
+
+  if (!shell->listener->close) {
+    printf("error@1 missing close handler\n");
+    exit(EXIT_FAILURE);
+  }
+
+  shell->listener->close(shell, shell->_userdata);
+}
+
 void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
                                       int32_t width, int32_t height,
                                       struct wl_array *states) {

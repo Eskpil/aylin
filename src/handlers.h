@@ -33,8 +33,11 @@ void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
                                       int32_t width, int32_t height,
                                       struct wl_array *states);
 
+void _aylin_on_xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel);
+
 static const struct xdg_toplevel_listener _aylin_xdg_toplevel_listener = {
     .configure = _aylin_on_xdg_toplevel_configure,
+    .close = _aylin_on_xdg_toplevel_close,
 };
 
 void _aylin_on_xdg_surface_configure(void *data, struct xdg_surface *surface,

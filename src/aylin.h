@@ -39,6 +39,8 @@ struct aylin_application {
   struct aylin_pointer *pointer;
   struct aylin_touch *touch;
 
+  bool terminated;
+
   int epollfd;
 };
 
@@ -119,6 +121,7 @@ struct aylin_buffer {
 };
 
 struct aylin_shell_listener {
+  void (*close)(struct aylin_shell *shell, void *data);
   void (*pointer_axis)(struct aylin_shell *shell,
                        struct aylin_shell_pointer_axis_event *event,
                        void *data);
@@ -147,6 +150,8 @@ aylin_application_find_shell_by_surface(struct aylin_application *app,
 struct wl_surface *
 aylin_application_create_independent_surface(struct aylin_application *app);
 void aylin_application_destroy_independent_surface(struct wl_surface *surface);
+
+void aylin_application_terminate(struct aylin_application *app);
 
 void aylin_application_destroy(struct aylin_application *app);
 

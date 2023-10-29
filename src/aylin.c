@@ -78,6 +78,8 @@ struct aylin_application *aylin_application_create(char *app_id) {
 
   wl_list_init(&app->shells);
 
+  app->terminated = false;
+
   app->epollfd = epoll_create1(0);
   if (app->epollfd == -1) {
     return NULL;
@@ -131,7 +133,7 @@ int aylin_application_poll(struct aylin_application *app) {
     return display_fd;
   }
 
-  for (;;) {
+  while (!app->terminated) {
     wl_display_flush(app->display);
 
     struct epoll_event events[MAX_EVENTS];
@@ -178,11 +180,22 @@ aylin_application_find_shell_by_surface(struct aylin_application *app,
   return NULL;
 }
 
+void aylin_application_terminate(struct aylin_application *app) {
+  app->terminated = true;
+}
+
 void aylin_application_destroy(struct aylin_application *app) {
   struct aylin_shell *shell, *tmp;
   wl_list_for_each_safe(shell, tmp, &app->shells, link) {
     aylin_shell_destroy(shell);
   }
+
+  if (app->pointer)
+    aylin_pointer_destroy(app->pointer);
+  if (app->keyboard)
+    aylin_keyboard_destroy(app->keyboard);
+  if (app->touch)
+    aylin_touch_destroy(app->touch);
 
   xdg_wm_base_destroy(app->xdg_wm_base);
   zwlr_layer_shell_v1_destroy(app->layer_shell);
@@ -193,12 +206,6 @@ void aylin_application_destroy(struct aylin_application *app) {
   wl_registry_destroy(app->registry);
   wl_display_disconnect(app->display);
 
-  if (app->pointer)
-    aylin_pointer_destroy(app->pointer);
-  if (app->keyboard)
-    aylin_keyboard_destroy(app->keyboard);
-  if (app->touch)
-    aylin_touch_destroy(app->touch);
   free(app);
 }
 
@@ -277,9 +284,6 @@ aylin_window_create(struct aylin_application *app,
   wl_display_roundtrip(app->display);
 
   xdg_toplevel_set_app_id(shell->xdg.toplevel, app->app_id);
-  xdg_toplevel_set_title(shell->xdg.toplevel, "fittekuk");
-
-  printf("[Info]: Set up xdg listeners\n");
 
   aylin_shell_frame(shell);
 

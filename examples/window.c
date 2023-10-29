@@ -38,7 +38,24 @@ static void on_pointer_axis(struct aylin_shell *shell,
                             struct aylin_shell_pointer_axis_event *event,
                             void *data) {}
 
+static void on_close(struct aylin_shell *shell, void *data) {
+  // aylin_application_terminate forces the event loop to terminate giving us
+  // the ability to free up all allocating resources gracefully.
+  //
+  // it is safe to terminate the application before we destroy the shell since
+  // termination happens on the next event loop run. And we can assume the next
+  // event loop run will be after the current execution context is finished.
+  aylin_application_terminate(shell->app);
+
+  // even though you draw CSD the compositor may still choose to close us. So
+  // this is where you would insert your application logic to persist valuable
+  // state. For example, open a dialog asking the user to save or discard the
+  // unsaved document.
+  aylin_shell_destroy(shell);
+}
+
 static const struct aylin_shell_listener shell_listener = {
+    .close = on_close,
     .frame = on_frame,
     .key_pressed = on_key_pressed,
     .pointer_motion = on_pointer_motion,
@@ -63,10 +80,13 @@ int main() {
 
   aylin_window_set_title(shell, "example");
 
-  while (wl_display_dispatch(app->display)) {
+  int ret = aylin_application_poll(app);
+  if (0 > ret) {
+    fprintf(stderr, "[error]: could not poll: (%s)\n", strerror(errno));
   }
 
-  fprintf(stderr, "[Error]: Could not poll: (%s)\n", strerror(errno));
+  // gracefully destroy the application and all its remaining resources
+  aylin_application_destroy(app);
 
   return 0;
 }
