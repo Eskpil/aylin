@@ -63,6 +63,16 @@ static const struct aylin_shell_listener shell_listener = {
     .pointer_axis = on_pointer_axis,
 };
 
+static void on_output(struct aylin_application *app,
+                      struct aylin_output *output, void *data) {
+  printf("output: %dx%d (%s) %s\n", output->width, output->height, output->name,
+         output->description);
+}
+
+static const struct aylin_application_listener app_listener = {
+    .output = on_output,
+};
+
 int main() {
   // listener and userdata is optional on the application. Since not every
   // application instance may want to receive information about outputs and such
@@ -70,7 +80,7 @@ int main() {
   // listener communicates global compositor state and not surface specific
   // state.
   struct aylin_application *app =
-      aylin_application_create("io.aylin.example", NULL, NULL);
+      aylin_application_create("io.aylin.example", &app_listener, NULL);
   if (app == NULL) {
     fprintf(stderr, "[Error]: Could not create application: (%s)\n",
             strerror(errno));

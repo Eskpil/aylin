@@ -34,6 +34,7 @@ struct aylin_application {
   uint32_t clock_id, seat_capabilities;
 
   struct wl_list shells;
+  struct wl_list outputs;
 
   struct aylin_keyboard *keyboard;
   struct aylin_pointer *pointer;
@@ -123,7 +124,23 @@ struct aylin_buffer {
   int32_t width, height, size, stride;
 };
 
-struct aylin_application_listener {};
+struct aylin_output {
+  struct wl_list link; // aylin_application::outputs
+  struct aylin_application *app;
+
+  struct wl_output *wl_output;
+
+  int32_t x, y, physical_width, physical_height, subpixel, transform, scale,
+      width, height, refresh;
+  uint32_t flags;
+
+  char *name, *make, *model, *description;
+};
+
+struct aylin_application_listener {
+  void (*output)(struct aylin_application *app, struct aylin_output *output,
+                 void *data);
+};
 
 struct aylin_shell_listener {
   void (*close)(struct aylin_shell *shell, void *data);
@@ -158,6 +175,9 @@ aylin_application_find_shell_by_surface(struct aylin_application *app,
 struct wl_surface *
 aylin_application_create_independent_surface(struct aylin_application *app);
 void aylin_application_destroy_independent_surface(struct wl_surface *surface);
+
+void _aylin_application_create_output(struct aylin_application *app,
+                                      struct wl_output *wl_output);
 
 void aylin_application_terminate(struct aylin_application *app);
 

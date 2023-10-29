@@ -34,6 +34,10 @@ void _aylin_on_registry_global(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
     app->layer_shell = wl_registry_bind(
         registry, name, &zwlr_layer_shell_v1_interface, version);
+  } else if (strcmp(interface, wl_output_interface.name) == 0) {
+    struct wl_output *wl_output =
+        wl_registry_bind(registry, name, &wl_output_interface, version);
+    _aylin_application_create_output(app, wl_output);
   } else {
   }
 }
@@ -403,4 +407,65 @@ void _aylin_on_wl_pointer_axis(void *data, struct wl_pointer *wl_pointer,
                                          pointer->shell->_userdata);
 
   free(event);
+}
+
+void _aylin_on_wl_output_geometry(void *data, struct wl_output *wl_output,
+                                  int32_t x, int32_t y, int32_t physical_width,
+                                  int32_t physical_height, int32_t subpixel,
+                                  const char *make, const char *model,
+                                  int32_t transform) {
+  struct aylin_output *output = data;
+
+  output->make = strdup(make);
+  output->model = strdup(model);
+
+  output->x = x;
+  output->y = y;
+
+  output->physical_width = physical_width;
+  output->physical_height = physical_height;
+
+  // TODO: Create proper enums for these.
+  output->subpixel = subpixel;
+  output->transform = transform;
+}
+
+void _aylin_on_wl_output_mode(void *data, struct wl_output *wl_output,
+                              uint32_t flags, int32_t width, int32_t height,
+                              int32_t refresh) {
+  struct aylin_output *output = data;
+
+  // TODO: create enums for flags as well.
+
+  output->flags = flags;
+  output->width = width;
+  output->height = height;
+  output->refresh = refresh;
+}
+
+void _aylin_on_wl_output_done(void *data, struct wl_output *wl_output) {
+  struct aylin_output *output = data;
+
+  if (!output->app->listener)
+    return;
+
+  output->app->listener->output(output->app, output, output->app->_userdata);
+}
+
+void _aylin_on_wl_output_scale(void *data, struct wl_output *wl_output,
+                               int32_t factor) {
+  struct aylin_output *output = data;
+  output->scale = factor;
+}
+
+void _aylin_on_wl_output_name(void *data, struct wl_output *wl_output,
+                              const char *name) {
+  struct aylin_output *output = data;
+  output->name = strdup(name);
+}
+
+void _aylin_on_wl_output_description(void *data, struct wl_output *wl_output,
+                                     const char *description) {
+  struct aylin_output *output = data;
+  output->description = strdup(description);
 }

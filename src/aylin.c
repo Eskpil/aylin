@@ -80,6 +80,7 @@ aylin_application_create(char *app_id,
   struct aylin_application *app = calloc(1, sizeof(*app));
 
   wl_list_init(&app->shells);
+  wl_list_init(&app->outputs);
 
   app->terminated = false;
 
@@ -125,10 +126,23 @@ aylin_application_create(char *app_id,
 
   return app;
 }
+
+void _aylin_application_create_output(struct aylin_application *app,
+                                      struct wl_output *wl_output) {
+  struct aylin_output *output = calloc(1, sizeof(*output));
+  output->wl_output = wl_output;
+  output->app = app;
+
+  wl_output_add_listener(output->wl_output, &_aylin_wl_output_listener, output);
+
+  wl_list_insert(&app->outputs, &output->link);
+}
+
 struct wl_surface *
 aylin_application_create_independent_surface(struct aylin_application *app) {
   return wl_compositor_create_surface(app->compositor);
 }
+
 void aylin_application_destroy_independent_surface(struct wl_surface *surface) {
   wl_surface_destroy(surface);
 }
