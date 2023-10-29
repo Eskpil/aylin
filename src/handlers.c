@@ -68,8 +68,9 @@ void _aylin_on_xdg_surface_configure(void *data, struct xdg_surface *surface,
 
   struct aylin_shell *shell = data;
 
-  struct aylin_buffer *buffer = aylin_shell_create_buffer(shell);
-  aylin_destroy_buffer(buffer);
+  struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
+  shell->listener->frame(shell, event, shell->_userdata);
+  free(event);
 }
 
 void _aylin_on_wl_buffer_release(void *data, struct wl_buffer *wl_buffer) {
@@ -130,8 +131,9 @@ void _aylin_on_wl_surface_frame_done(void *data,
   struct wl_callback *callback = wl_surface_frame(shell->surface);
   wl_callback_add_listener(callback, &_aylin_wl_surface_frame_listener, data);
 
-  struct aylin_buffer *buffer = aylin_shell_create_buffer(shell);
-  aylin_destroy_buffer(buffer);
+  struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
+  shell->listener->frame(shell, event, shell->_userdata);
+  free(event);
 }
 
 void _aylin_on_zwlr_surface_closed(
@@ -144,8 +146,9 @@ void _aylin_on_zwlr_surface_configure(
 
   struct aylin_shell *shell = data;
 
-  struct aylin_buffer *buffer = aylin_shell_create_buffer(shell);
-  aylin_destroy_buffer(buffer);
+  struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
+  shell->listener->frame(shell, event, shell->_userdata);
+  free(event);
 }
 
 void _aylin_on_wl_seat_name(void *data, struct wl_seat *seat,

@@ -7,8 +7,10 @@
 
 #include <cairo/cairo.h>
 
-static void on_frame(struct aylin_shell *shell, struct aylin_buffer *buffer,
-                     void *data) {
+static void on_frame(struct aylin_shell *shell,
+                     struct aylin_shell_frame_event *event, void *data) {
+  struct aylin_buffer *buffer = aylin_shell_create_buffer(shell);
+
   cairo_surface_t *cairo_surface = aylin_buffer_create_cairo(buffer);
   cairo_t *cr = cairo_create(cairo_surface);
 
@@ -17,6 +19,8 @@ static void on_frame(struct aylin_shell *shell, struct aylin_buffer *buffer,
 
   cairo_fill(cr);
   cairo_destroy(cr);
+
+  aylin_destroy_buffer(buffer);
 }
 
 static void on_key_pressed(struct aylin_shell *shell,

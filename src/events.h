@@ -59,6 +59,8 @@ struct aylin_shell_pointer_axis_event {
   enum aylin_pointer_axis axis;
 };
 
+struct aylin_shell_frame_event {};
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

@@ -108,6 +108,11 @@ struct aylin_shell {
 struct aylin_buffer {
   int fd;
 
+  struct aylin_shell *shell;
+
+  struct wl_shm_pool *pool;
+  struct wl_buffer *wl_buffer;
+
   uint8_t *bytes;
 
   int32_t width, height, size, stride;
@@ -128,8 +133,8 @@ struct aylin_shell_listener {
                              void *data);
   void (*key_pressed)(struct aylin_shell *shell,
                       struct aylin_shell_key_pressed_event *event, void *data);
-  void (*frame)(struct aylin_shell *window, struct aylin_buffer *buffer,
-                void *data);
+  void (*frame)(struct aylin_shell *window,
+                struct aylin_shell_frame_event *event, void *data);
 };
 
 struct aylin_application *aylin_application_create(char *app_id);
