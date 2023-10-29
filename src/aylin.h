@@ -39,6 +39,9 @@ struct aylin_application {
   struct aylin_pointer *pointer;
   struct aylin_touch *touch;
 
+  const struct aylin_application_listener *listener;
+  void *_userdata;
+
   bool terminated;
 
   int epollfd;
@@ -120,6 +123,8 @@ struct aylin_buffer {
   int32_t width, height, size, stride;
 };
 
+struct aylin_application_listener {};
+
 struct aylin_shell_listener {
   void (*close)(struct aylin_shell *shell, void *data);
   void (*pointer_axis)(struct aylin_shell *shell,
@@ -140,7 +145,10 @@ struct aylin_shell_listener {
                 struct aylin_shell_frame_event *event, void *data);
 };
 
-struct aylin_application *aylin_application_create(char *app_id);
+struct aylin_application *
+aylin_application_create(char *app_id,
+                         const struct aylin_application_listener *listener,
+                         void *userdata);
 int aylin_application_poll(struct aylin_application *app);
 
 struct aylin_shell *

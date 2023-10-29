@@ -65,7 +65,13 @@ static const struct aylin_shell_listener shell_listener = {
 };
 
 int main() {
-  struct aylin_application *app = aylin_application_create("io.aylin.example");
+  // listener and userdata is optional on the application. Since not every
+  // application instance may want to receive information about outputs and such
+  // alike. You could think of it this way, every event sent to the application
+  // listener communicates global compositor state and not surface specific
+  // state.
+  struct aylin_application *app =
+      aylin_application_create("io.aylin.example", NULL, NULL);
   if (app == NULL) {
     fprintf(stderr, "[Error]: Could not create application: (%s)\n",
             strerror(errno));

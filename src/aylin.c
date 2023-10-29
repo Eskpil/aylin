@@ -73,12 +73,18 @@ static void aylin_application_initialize_input(struct aylin_application *app) {
     app->touch = aylin_application_create_touch(app);
 }
 
-struct aylin_application *aylin_application_create(char *app_id) {
+struct aylin_application *
+aylin_application_create(char *app_id,
+                         const struct aylin_application_listener *listener,
+                         void *_userdata) {
   struct aylin_application *app = calloc(1, sizeof(*app));
 
   wl_list_init(&app->shells);
 
   app->terminated = false;
+
+  app->listener = listener;
+  app->_userdata = _userdata;
 
   app->epollfd = epoll_create1(0);
   if (app->epollfd == -1) {
