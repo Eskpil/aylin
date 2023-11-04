@@ -71,9 +71,6 @@ add_library(
         ${SOURCES}
 )
 
-message("wayland client ${WAYLAND_CLIENT}")
-message("xkbcommon ${XKBCOMMON}")
-
 target_link_libraries(
         ${LIBAYLIN}
         m
@@ -82,7 +79,6 @@ target_link_libraries(
         ${WAYLAND_CURSOR_LIBRARIES}
         ${XKBCOMMON_LIBRARIES}
         ${CAIRO_LIBRARIES}
-        ${PANGO_LIBRARIES}
 )
 
 target_include_directories(

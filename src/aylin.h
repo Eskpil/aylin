@@ -11,11 +11,18 @@
 
 #include "events.h"
 
+#ifdef __cplusplus
+#define namespace _namespace
+#define class _class
+#endif // __cplusplus
+
 #include "protocols/presentation-time-client-protocol.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "protocols/xdg-shell-client-protocol.h"
 
 #ifdef __cplusplus
+#undef namespace
+#undef class
 extern "C" {
 #endif // __cplusplus
 

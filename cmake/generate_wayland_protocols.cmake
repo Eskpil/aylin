@@ -10,8 +10,6 @@ function(generate_wayland_client_protocol)
     set_source_files_properties(${ARGS_HEADER_FILE} GENERATED)
     set_source_files_properties(${ARGS_CODE_FILE} GENERATED)
 
-    message("generating ${_xml_file} ${ARGS_HEADER_FILE} ${ARGS_CODE_FILE}")
-
     add_custom_command(
             OUTPUT ${ARGS_HEADER_FILE}
             COMMAND ${WaylandScannerExec} client-header ${_xml_file} ${ARGS_HEADER_FILE}

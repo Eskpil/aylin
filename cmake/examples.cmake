@@ -14,7 +14,6 @@ target_include_directories(
         "window-example"
         PUBLIC
         "src"
-        ${PANGO_INCLUDE_DIRS}
 )
 
 add_executable(
