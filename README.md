@@ -5,7 +5,6 @@ With ext_session_lock being planned.
 
 ### Todos
 
-- Deal with outputs (displays)
 - Handle touch input
 - ext_session_lock
 
