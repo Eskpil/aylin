@@ -151,6 +151,14 @@ struct aylin_application_listener {
 
 struct aylin_shell_listener {
   void (*close)(struct aylin_shell *shell, void *data);
+
+  // the next sequence of two events are xdg_toplevel specific and do not apply
+  // to layer surfaces.
+  void (*resize)(struct aylin_shell *shell,
+                 struct aylin_shell_resize_event *event, void *data);
+  void (*activate)(struct aylin_shell *shell,
+                   struct aylin_shell_activate_event *event, void *data);
+
   void (*pointer_axis)(struct aylin_shell *shell,
                        struct aylin_shell_pointer_axis_event *event,
                        void *data);

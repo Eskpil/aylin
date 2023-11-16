@@ -24,8 +24,7 @@ void _aylin_on_registry_global(void *data, struct wl_registry *registry,
     app->seat = wl_registry_bind(registry, name, &wl_seat_interface, 4);
   } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
     app->xdg_wm_base =
-        wl_registry_bind(registry, name, &xdg_wm_base_interface, version);
-
+        wl_registry_bind(registry, name, &xdg_wm_base_interface, 2);
   } else if (strcmp(interface, wl_shm_interface.name) == 0) {
     app->shm = wl_registry_bind(registry, name, &wl_shm_interface, version);
   } else if (strcmp(interface, wp_presentation_interface.name) == 0) {
@@ -66,6 +65,11 @@ void _aylin_on_xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
   shell->listener->close(shell, shell->_userdata);
 }
 
+struct state {
+  struct wl_list link;
+  enum xdg_toplevel_state v;
+};
+
 void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
                                       int32_t width, int32_t height,
                                       struct wl_array *states) {
@@ -74,6 +78,59 @@ void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
   if (width == 0 || height == 0) {
     /* Compositor is deferring to us */
     return;
+  }
+
+  enum xdg_toplevel_state *state;
+  wl_array_for_each(state, states) {
+    switch (*state) {
+    // TODO: Figure out how to handle tiled events since they are the ones
+    // responsible for telling us the size of the surface after a tiling
+    // re-layout has been preformed by the compositor.
+    case XDG_TOPLEVEL_STATE_TILED_BOTTOM:
+    case XDG_TOPLEVEL_STATE_RESIZING:
+      if (shell->listener->resize) {
+        struct aylin_shell_resize_event *event = calloc(1, sizeof(*event));
+        event->height = height;
+        event->width = width;
+        event->action = resize;
+
+        shell->listener->resize(shell, event, shell->_userdata);
+        free(event);
+      }
+      break;
+    case XDG_TOPLEVEL_STATE_MAXIMIZED:
+      if (shell->listener->resize) {
+        struct aylin_shell_resize_event *event = calloc(1, sizeof(*event));
+        event->width = width;
+        event->height = height;
+        event->action = maximize;
+
+        shell->listener->resize(shell, event, shell->_userdata);
+        free(event);
+      }
+      break;
+    case XDG_TOPLEVEL_STATE_FULLSCREEN:
+      if (shell->listener->resize) {
+        struct aylin_shell_resize_event *event = calloc(1, sizeof(*event));
+        event->width = width;
+        event->height = height;
+        event->action = fullscreen;
+
+        shell->listener->resize(shell, event, shell->_userdata);
+        free(event);
+      }
+      break;
+    case XDG_TOPLEVEL_STATE_ACTIVATED:
+      if (shell->listener->activate) {
+        struct aylin_shell_activate_event *event = calloc(1, sizeof(*event));
+
+        shell->listener->activate(shell, event, shell->_userdata);
+        free(event);
+      }
+      break;
+    default:
+      break;
+    }
   }
 
   shell->width = width;

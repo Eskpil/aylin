@@ -38,6 +38,23 @@ static void on_pointer_axis(struct aylin_shell *shell,
                             struct aylin_shell_pointer_axis_event *event,
                             void *data) {}
 
+static void on_resize(struct aylin_shell *shell,
+                      struct aylin_shell_resize_event *event, void *data) {
+  switch (event->action) {
+  case resize:
+    printf("resizing to: (%dx%d)\n", event->width, event->height);
+    break;
+  case fullscreen:
+    printf("full-screening to: (%dx%d)\n", event->width, event->height);
+    break;
+  case maximize:
+    printf("maximizing to: (%dx%d)\n", event->width, event->height);
+    break;
+  default:
+    break;
+  }
+}
+
 static void on_close(struct aylin_shell *shell, void *data) {
   // aylin_application_terminate forces the event loop to terminate giving us
   // the ability to free up all allocating resources gracefully.
@@ -57,6 +74,7 @@ static void on_close(struct aylin_shell *shell, void *data) {
 static const struct aylin_shell_listener shell_listener = {
     .close = on_close,
     .frame = on_frame,
+    .resize = on_resize,
     .key_pressed = on_key_pressed,
     .pointer_motion = on_pointer_motion,
     .pointer_button = on_pointer_button,

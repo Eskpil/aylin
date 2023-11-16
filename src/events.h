@@ -28,6 +28,12 @@ enum aylin_input_action {
   release,
 };
 
+enum aylin_resize_action {
+  resize,
+  maximize,
+  fullscreen,
+};
+
 struct aylin_shell_key_pressed_event {
   struct aylin_keyboard *keyboard;
   uint32_t serial, keycode, symbol;
@@ -60,6 +66,13 @@ struct aylin_shell_pointer_axis_event {
 };
 
 struct aylin_shell_frame_event {};
+
+struct aylin_shell_resize_event {
+  int width, height;
+  enum aylin_resize_action action;
+};
+
+struct aylin_shell_activate_event {};
 
 #ifdef __cplusplus
 }
