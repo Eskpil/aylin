@@ -87,6 +87,9 @@ void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
     // responsible for telling us the size of the surface after a tiling
     // re-layout has been preformed by the compositor.
     case XDG_TOPLEVEL_STATE_TILED_BOTTOM:
+    case XDG_TOPLEVEL_STATE_TILED_LEFT:
+    case XDG_TOPLEVEL_STATE_TILED_RIGHT:
+    case XDG_TOPLEVEL_STATE_TILED_TOP:
     case XDG_TOPLEVEL_STATE_RESIZING:
       if (shell->listener->resize) {
         struct aylin_shell_resize_event *event = calloc(1, sizeof(*event));
