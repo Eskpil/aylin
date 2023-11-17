@@ -285,6 +285,7 @@ void _aylin_on_wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
   struct aylin_shell_key_pressed_event *event = calloc(1, sizeof(*event));
 
   event->serial = serial;
+  event->timestamp = time;
   event->keyboard = keyboard;
   event->keycode = keycode;
   event->symbol = sym;
@@ -427,6 +428,8 @@ void _aylin_on_wl_pointer_motion(void *data, struct wl_pointer *wl_pointer,
 
   event->pointer = pointer;
   event->serial = UINT32_MAX;
+  event->timestamp = time;
+
   event->x = x;
   event->y = y;
 
@@ -452,6 +455,7 @@ void _aylin_on_wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
 
   event->serial = serial;
   event->button = button;
+  event->timestamp = time;
 
   event->x = pointer->x;
   event->y = pointer->y;
@@ -476,6 +480,7 @@ void _aylin_on_wl_pointer_axis(void *data, struct wl_pointer *wl_pointer,
   struct aylin_shell_pointer_axis_event *event = calloc(1, sizeof(*event));
 
   event->pointer = pointer;
+  event->timestamp = time;
 
   event->axis = axis;
   event->value = wl_fixed_to_double(value);

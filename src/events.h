@@ -36,7 +36,7 @@ enum aylin_resize_action {
 
 struct aylin_shell_key_pressed_event {
   struct aylin_keyboard *keyboard;
-  uint32_t serial, keycode, symbol;
+  uint32_t serial, keycode, symbol, timestamp;
   enum aylin_input_action action;
 };
 
@@ -47,13 +47,13 @@ struct aylin_shell_keyboard_modifiers_event {
 
 struct aylin_shell_pointer_motion_event {
   struct aylin_pointer *pointer;
-  uint32_t serial;
+  uint32_t serial, timestamp;
   double x, y;
 };
 
 struct aylin_shell_pointer_button_event {
   struct aylin_pointer *pointer;
-  uint32_t serial;
+  uint32_t serial, timestamp;
   double x, y;
   enum aylin_input_action action;
   enum aylin_pointer_button button;
@@ -62,6 +62,7 @@ struct aylin_shell_pointer_button_event {
 struct aylin_shell_pointer_axis_event {
   struct aylin_pointer *pointer;
   double value;
+  uint32_t timestamp;
   enum aylin_pointer_axis axis;
 };
 
