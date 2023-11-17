@@ -365,7 +365,7 @@ void _aylin_on_wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
   if (!pointer->shell)
     return;
 
-  if (!pointer->shell->listener->pointer_motion)
+  if (!pointer->shell->listener->pointer_enter)
     return;
 
   double x = wl_fixed_to_double(surface_x);
@@ -374,21 +374,38 @@ void _aylin_on_wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
   pointer->x = x;
   pointer->y = y;
 
-  struct aylin_shell_pointer_motion_event *event = calloc(1, sizeof(*event));
+  struct aylin_shell_pointer_enter_event *event = calloc(1, sizeof(*event));
 
   event->pointer = pointer;
   event->serial = serial;
   event->x = x;
   event->y = y;
 
-  pointer->shell->listener->pointer_motion(pointer->shell, event,
-                                           pointer->shell->_userdata);
+  pointer->shell->listener->pointer_enter(pointer->shell, event,
+                                          pointer->shell->_userdata);
 
   free(event);
 }
 
 void _aylin_on_wl_pointer_leave(void *data, struct wl_pointer *wl_pointer,
-                                uint32_t serial, struct wl_surface *surface) {}
+                                uint32_t serial, struct wl_surface *surface) {
+  struct aylin_pointer *pointer = data;
+  if (!pointer->shell)
+    return;
+
+  if (!pointer->shell->listener->pointer_leave)
+    return;
+
+  struct aylin_shell_pointer_leave_event *event = calloc(1, sizeof(*event));
+
+  event->pointer = pointer;
+  event->serial = serial;
+
+  pointer->shell->listener->pointer_leave(pointer->shell, event,
+                                          pointer->shell->_userdata);
+
+  free(event);
+}
 
 void _aylin_on_wl_pointer_motion(void *data, struct wl_pointer *wl_pointer,
                                  uint32_t time, wl_fixed_t surface_x,

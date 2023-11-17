@@ -159,6 +159,13 @@ struct aylin_shell_listener {
   void (*activate)(struct aylin_shell *shell,
                    struct aylin_shell_activate_event *event, void *data);
 
+  void (*pointer_enter)(struct aylin_shell *shell,
+                        struct aylin_shell_pointer_enter_event *event,
+                        void *data);
+  void (*pointer_leave)(struct aylin_shell *shell,
+                        struct aylin_shell_pointer_leave_event *event,
+                        void *data);
+
   void (*pointer_axis)(struct aylin_shell *shell,
                        struct aylin_shell_pointer_axis_event *event,
                        void *data);

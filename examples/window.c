@@ -22,6 +22,19 @@ static void on_frame(struct aylin_shell *shell,
   aylin_destroy_buffer(buffer);
 }
 
+// NOTE: Be aware, the wl_pointer.enter event actually sends us the coordinates
+// of the pointer from where it is in the surface at entry. pointer_enter_events
+// should also take this into consideration.
+// struct aylin_shell_pointer_enter_event contains the pointer coordinates of
+// the pointer.
+static void on_pointer_enter(struct aylin_shell *shell,
+                             struct aylin_shell_pointer_enter_event *event,
+                             void *data) {}
+
+static void on_pointer_leave(struct aylin_shell *shell,
+                             struct aylin_shell_pointer_leave_event *event,
+                             void *data) {}
+
 static void on_key_pressed(struct aylin_shell *shell,
                            struct aylin_shell_key_pressed_event *event,
                            void *data) {}
@@ -75,10 +88,14 @@ static const struct aylin_shell_listener shell_listener = {
     .close = on_close,
     .frame = on_frame,
     .resize = on_resize,
+
     .key_pressed = on_key_pressed,
+
     .pointer_motion = on_pointer_motion,
     .pointer_button = on_pointer_button,
     .pointer_axis = on_pointer_axis,
+    .pointer_enter = on_pointer_enter,
+    .pointer_leave = on_pointer_leave,
 };
 
 static void on_output(struct aylin_application *app,

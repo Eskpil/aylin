@@ -74,6 +74,17 @@ struct aylin_shell_resize_event {
 
 struct aylin_shell_activate_event {};
 
+struct aylin_shell_pointer_enter_event {
+  struct aylin_pointer *pointer;
+  double x, y;
+  uint32_t serial;
+};
+
+struct aylin_shell_pointer_leave_event {
+  struct aylin_pointer *pointer;
+  uint32_t serial;
+};
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
