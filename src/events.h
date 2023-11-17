@@ -24,8 +24,8 @@ enum aylin_pointer_button {
 };
 
 enum aylin_input_action {
-  press,
   release,
+  press,
 };
 
 enum aylin_resize_action {
