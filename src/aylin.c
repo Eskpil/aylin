@@ -157,7 +157,7 @@ int aylin_application_poll(struct aylin_application *app) {
     wl_display_flush(app->display);
 
     struct epoll_event events[MAX_EVENTS];
-    int nfds = epoll_wait(app->epollfd, events, MAX_EVENTS, -1);
+    int nfds = epoll_wait(app->epollfd, events, MAX_EVENTS, 10);
     if (nfds == -1) {
       return nfds;
     }
@@ -182,6 +182,9 @@ int aylin_application_poll(struct aylin_application *app) {
         }
       }
     }
+
+    if (app->listener->process)
+      app->listener->process(app, app->_userdata);
   }
 
   return 0;

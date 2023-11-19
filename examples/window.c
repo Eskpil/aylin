@@ -104,8 +104,13 @@ static void on_output(struct aylin_application *app,
          output->description);
 }
 
+static void on_process(struct aylin_application *app, void *data) {
+  printf("process callback\n");
+}
+
 static const struct aylin_application_listener app_listener = {
     .output = on_output,
+    .process = on_process,
 };
 
 int main() {

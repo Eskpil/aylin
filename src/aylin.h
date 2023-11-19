@@ -147,6 +147,7 @@ struct aylin_output {
 struct aylin_application_listener {
   void (*output)(struct aylin_application *app, struct aylin_output *output,
                  void *data);
+  void (*process)(struct aylin_application *app, void *data);
 };
 
 struct aylin_shell_listener {
