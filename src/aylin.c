@@ -324,6 +324,11 @@ void aylin_window_set_title(struct aylin_shell *shell, char *title) {
   xdg_toplevel_set_title(shell->xdg.toplevel, shell->xdg.title);
 }
 
+void aylin_window_move(struct aylin_shell *window, uint32_t serial) {
+  assert(window->kind == xdg);
+  xdg_toplevel_move(window->xdg.toplevel, window->app->seat, serial);
+}
+
 struct aylin_shell *
 aylin_layer_create(struct aylin_application *app,
                    const struct aylin_shell_listener *listener,

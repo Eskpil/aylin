@@ -225,6 +225,7 @@ aylin_window_create(struct aylin_application *app,
                     void *userdata);
 
 void aylin_window_set_title(struct aylin_shell *window, char *title);
+void aylin_window_move(struct aylin_shell *window, uint32_t serial);
 
 // ----------------------- layer --------------------------------------
 
