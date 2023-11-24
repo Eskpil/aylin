@@ -281,7 +281,7 @@ aylin_window_create(struct aylin_application *app,
   struct aylin_shell *shell = aylin_shell_create_base(app, listener, data);
   assert(shell != NULL);
 
-  shell->kind = xdg;
+  shell->kind = AYLIN_SHELL_KIND_XDG;
 
   shell->width = 720;
   shell->height = 480;
@@ -325,7 +325,7 @@ void aylin_window_set_title(struct aylin_shell *shell, char *title) {
 }
 
 void aylin_window_move(struct aylin_shell *window, uint32_t serial) {
-  assert(window->kind == xdg);
+  assert(window->kind == AYLIN_SHELL_KIND_XDG);
   xdg_toplevel_move(window->xdg.toplevel, window->app->seat, serial);
 }
 
@@ -339,7 +339,7 @@ aylin_layer_create(struct aylin_application *app,
   shell->width = 1920;
   shell->height = 48;
 
-  shell->kind = layer;
+  shell->kind = AYLIN_SHELL_KIND_LAYER;
 
   shell->layer.surface = zwlr_layer_shell_v1_get_layer_surface(
       shell->app->layer_shell, shell->surface, NULL,
@@ -363,9 +363,9 @@ void aylin_shell_set_dimensions(struct aylin_shell *shell, int32_t width,
   shell->width = width;
   shell->height = height;
 
-  if (shell->kind == xdg) {
+  if (shell->kind == AYLIN_SHELL_KIND_XDG) {
     xdg_surface_set_window_geometry(shell->xdg.surface, 0, 0, width, height);
-  } else if (shell->kind == layer) {
+  } else if (shell->kind == AYLIN_SHELL_KIND_LAYER) {
     zwlr_layer_surface_v1_set_size(shell->layer.surface, width, height);
   } else {
     printf("unknown shell kind");
@@ -375,30 +375,110 @@ void aylin_shell_set_dimensions(struct aylin_shell *shell, int32_t width,
 
 void aylin_layer_set_anchor(struct aylin_shell *shell,
                             enum aylin_shell_anchor anchor) {
-  assert(shell->kind == layer);
+  assert(shell->kind == AYLIN_SHELL_KIND_LAYER);
   zwlr_layer_surface_v1_set_anchor(shell->layer.surface, anchor);
   wl_surface_commit(shell->surface);
 }
 
 void aylin_layer_set_exclusivity_zone(struct aylin_shell *shell, int32_t zone) {
-  assert(shell->kind == layer);
+  assert(shell->kind == AYLIN_SHELL_KIND_LAYER);
   zwlr_layer_surface_v1_set_exclusive_zone(shell->layer.surface, zone);
+}
+
+struct aylin_positioner *
+aylin_shell_create_positioner(struct aylin_shell *shell) {
+  struct aylin_positioner *positioner = calloc(1, sizeof(*positioner));
+
+  positioner->positioner =
+      xdg_wm_base_create_positioner(shell->app->xdg_wm_base);
+
+  return positioner;
+}
+
+void aylin_positioner_set_size(struct aylin_positioner *positioner, int width,
+                               int height) {
+  assert(positioner);
+  xdg_positioner_set_size(positioner->positioner, width, height);
+}
+
+void aylin_positioner_set_anchor(struct aylin_positioner *positioner,
+                                 enum aylin_positioner_anchor anchor) {
+  assert(positioner);
+  xdg_positioner_set_anchor(positioner->positioner, anchor);
+}
+
+void aylin_positioner_set_gravity(struct aylin_positioner *positioner,
+                                  enum aylin_positioner_gravity gravity) {
+  assert(positioner);
+  xdg_positioner_set_gravity(positioner->positioner, gravity);
+}
+
+void aylin_positioner_set_constraint_adjustment(
+    struct aylin_positioner *positioner, uint32_t constraint_adjustment) {
+  assert(positioner);
+  xdg_positioner_set_constraint_adjustment(positioner->positioner,
+                                           constraint_adjustment);
+}
+
+void aylin_positioner_set_anchor_rect(struct aylin_positioner *positioner,
+                                      int x, int y, int width, int height) {
+  assert(positioner);
+  xdg_positioner_set_anchor_rect(positioner->positioner, x, y, width, height);
+}
+
+// parent is allowed to be NULL.
+struct aylin_shell *
+aylin_popup_create(struct aylin_application *app, struct aylin_shell *parent,
+                   struct aylin_positioner *positioner,
+                   const struct aylin_shell_listener *listener,
+                   void *userdata) {
+  struct aylin_shell *popup = aylin_shell_create_base(app, listener, userdata);
+
+  popup->kind = AYLIN_SHELL_KIND_XDG_POPUP;
+
+  struct xdg_surface *parent_surface = NULL;
+  if (parent && parent->kind == AYLIN_SHELL_KIND_XDG) {
+    parent_surface = parent->xdg.surface;
+  }
+
+  popup->xdg_popup.surface =
+      xdg_wm_base_get_xdg_surface(app->xdg_wm_base, popup->surface);
+  if (popup->xdg_popup.surface == NULL)
+    return NULL;
+
+  xdg_surface_add_listener(popup->xdg_popup.surface,
+                           &_aylin_xdg_surface_listener, popup);
+
+  popup->xdg_popup.popup = xdg_surface_get_popup(
+      popup->xdg_popup.surface, parent_surface, positioner->positioner);
+  if (popup->xdg_popup.popup == NULL)
+    return NULL;
+
+  xdg_popup_add_listener(popup->xdg_popup.popup, &_aylin_xdg_popup_listener,
+                         popup);
+
+  wl_surface_commit(popup->surface);
+  wl_display_roundtrip(app->display);
+
+  aylin_shell_frame(popup);
+
+  return popup;
 }
 
 void aylin_shell_destroy(struct aylin_shell *shell) {
   wl_list_remove(&shell->link);
 
   switch (shell->kind) {
-  case layer:
+  case AYLIN_SHELL_KIND_LAYER:
     zwlr_layer_surface_v1_destroy(shell->layer.surface);
     break;
-  case xdg:
+  case AYLIN_SHELL_KIND_XDG:
     xdg_toplevel_destroy(shell->xdg.toplevel);
     xdg_surface_destroy(shell->xdg.surface);
     if (shell->xdg.title)
       free(shell->xdg.title);
     break;
-  case session_lock:
+  case AYLIN_SHELL_KIND_SESSION_LOCK:
   default:
     printf("unreachable\n");
     exit(EXIT_FAILURE);

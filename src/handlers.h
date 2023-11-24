@@ -186,6 +186,20 @@ static const struct wl_output_listener _aylin_wl_output_listener = {
     .name = _aylin_on_wl_output_name,
 };
 
+void _aylin_on_xdg_popup_configure(void *data, struct xdg_popup *xdg_popup,
+                                   int32_t x, int32_t y, int32_t width,
+                                   int32_t height);
+
+void _aylin_on_xdg_popup_done(void *data, struct xdg_popup *xdg_popup);
+void _aylin_on_xdg_popup_repositioned(void *data, struct xdg_popup *xdg_popup,
+                                      uint32_t token);
+
+static const struct xdg_popup_listener _aylin_xdg_popup_listener = {
+    .configure = _aylin_on_xdg_popup_configure,
+    .popup_done = _aylin_on_xdg_popup_done,
+    .repositioned = _aylin_on_xdg_popup_repositioned,
+};
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

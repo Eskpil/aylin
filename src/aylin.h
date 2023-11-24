@@ -79,7 +79,13 @@ struct aylin_touch {
   struct aylin_shell *shell;
 };
 
-enum aylin_shell_kind { xdg, layer, session_lock };
+enum aylin_shell_kind {
+  AYLIN_SHELL_KIND_XDG,
+  AYLIN_SHELL_KIND_LAYER,
+  AYLIN_SHELL_KIND_SESSION_LOCK,
+  AYLIN_SHELL_KIND_XDG_POPUP
+};
+
 enum aylin_shell_anchor {
   aylin_shell_anchor_top = 1,
   aylin_shell_anchor_bottom = 2,
@@ -107,6 +113,12 @@ struct aylin_shell {
     } layer;
     struct {
     } session_lock;
+    struct {
+      struct xdg_popup *popup;
+      struct xdg_surface *surface;
+
+      int32_t x, y;
+    } xdg_popup;
   };
 
   uint32_t frame_rate;
@@ -116,6 +128,44 @@ struct aylin_shell {
 
   const struct aylin_shell_listener *listener;
   void *_userdata;
+};
+
+enum aylin_positioner_anchor {
+  AYLIN_POSITIONER_ANCHOR_NONE,
+  AYLIN_POSITIONER_ANCHOR_TOP,
+  AYLIN_POSITIONER_ANCHOR_BOTTOM,
+  AYLIN_POSITIONER_ANCHOR_LEFT,
+  AYLIN_POSITIONER_ANCHOR_RIGHT,
+  AYLIN_POSITIONER_ANCHOR_TOP_LEFT,
+  AYLIN_POSITIONER_ANCHOR_TOP_RIGHT,
+  AYLIN_POSITIONER_ANCHOR_BOTTOM_LEFT,
+  AYLIN_POSITIONER_ANCHOR_BOTTOM_RIGHT,
+};
+
+enum aylin_positioner_gravity {
+  AYLIN_POSITIONER_GRAVITY_NONE,
+  AYLIN_POSITIONER_GRAVITY_TOP,
+  AYLIN_POSITIONER_GRAVITY_BOTTOM,
+  AYLIN_POSITIONER_GRAVITY_LEFT,
+  AYLIN_POSITIONER_GRAVITY_RIGHT,
+  AYLIN_POSITIONER_GRAVITY_TOP_LEFT,
+  AYLIN_POSITIONER_GRAVITY_TOP_RIGHT,
+  AYLIN_POSITIONER_GRAVITY_BOTTOM_LEFT,
+  AYLIN_POSITIONER_GRAVITY_BOTTOM_RIGHT,
+};
+
+enum aylin_positioner_constraint_adjustment {
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE = 0,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X = 1,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y = 2,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X = 4,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y = 8,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
+  AYLIN_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
+};
+
+struct aylin_positioner {
+  struct xdg_positioner *positioner;
 };
 
 struct aylin_buffer {
@@ -154,12 +204,13 @@ struct aylin_shell_listener {
   void (*close)(struct aylin_shell *shell, void *data);
 
   // the next sequence of two events are xdg_toplevel specific and do not apply
-  // to layer surfaces.
+  // to AYLIN_SHELL_KIND_LAYER surfaces.
   void (*resize)(struct aylin_shell *shell,
                  struct aylin_shell_resize_event *event, void *data);
   void (*activate)(struct aylin_shell *shell,
                    struct aylin_shell_activate_event *event, void *data);
 
+  // general events applicable to all surface kinds.
   void (*pointer_enter)(struct aylin_shell *shell,
                         struct aylin_shell_pointer_enter_event *event,
                         void *data);
@@ -227,7 +278,8 @@ aylin_window_create(struct aylin_application *app,
 void aylin_window_set_title(struct aylin_shell *window, char *title);
 void aylin_window_move(struct aylin_shell *window, uint32_t serial);
 
-// ----------------------- layer --------------------------------------
+// ----------------------- AYLIN_SHELL_KIND_LAYER
+// --------------------------------------
 
 struct aylin_shell *
 aylin_layer_create(struct aylin_application *app,
@@ -237,6 +289,28 @@ void aylin_layer_set_anchor(struct aylin_shell *shell,
                             enum aylin_shell_anchor anchor);
 
 void aylin_layer_set_exclusivity_zone(struct aylin_shell *shell, int32_t zone);
+
+// ----------------------- popup --------------------------------------
+
+struct aylin_positioner *
+aylin_shell_create_positioner(struct aylin_shell *shell);
+
+void aylin_positioner_set_size(struct aylin_positioner *positioner, int width,
+                               int height);
+void aylin_positioner_set_anchor(struct aylin_positioner *positioner,
+                                 enum aylin_positioner_anchor anchor);
+void aylin_positioner_set_gravity(struct aylin_positioner *positioner,
+                                  enum aylin_positioner_gravity gravity);
+void aylin_positioner_set_constraint_adjustment(
+    struct aylin_positioner *positioner, uint32_t constraint_adjustment);
+void aylin_positioner_set_anchor_rect(struct aylin_positioner *positioner,
+                                      int x, int y, int width, int height);
+
+// parent is allowed to be NULL.
+struct aylin_shell *
+aylin_popup_create(struct aylin_application *app, struct aylin_shell *parent,
+                   struct aylin_positioner *positioner,
+                   const struct aylin_shell_listener *listener, void *userdata);
 
 // ----------------------- buffer -------------------------------------
 

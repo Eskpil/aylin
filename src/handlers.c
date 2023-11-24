@@ -551,3 +551,21 @@ void _aylin_on_wl_output_description(void *data, struct wl_output *wl_output,
   struct aylin_output *output = data;
   output->description = strdup(description);
 }
+
+void _aylin_on_xdg_popup_configure(void *data, struct xdg_popup *xdg_popup,
+                                   int32_t x, int32_t y, int32_t width,
+                                   int32_t height) {
+  struct aylin_shell *popup = data;
+
+  assert(popup->kind == AYLIN_SHELL_KIND_XDG_POPUP);
+
+  popup->width = width;
+  popup->height = height;
+  popup->xdg_popup.x = x;
+  popup->xdg_popup.y = y;
+}
+
+void _aylin_on_xdg_popup_done(void *data, struct xdg_popup *xdg_popup) {}
+
+void _aylin_on_xdg_popup_repositioned(void *data, struct xdg_popup *xdg_popup,
+                                      uint32_t token) {}

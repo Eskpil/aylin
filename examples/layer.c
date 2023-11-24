@@ -80,7 +80,8 @@ int main() {
 
   struct aylin_shell *shell = aylin_layer_create(app, &shell_listener, NULL);
   if (shell == NULL) {
-    fprintf(stderr, "[Error]: Could not create layer: (%s)\n", strerror(errno));
+    fprintf(stderr, "[Error]: Could not create AYLIN_SHELL_KIND_LAYER: (%s)\n",
+            strerror(errno));
     return 1;
   }
 
