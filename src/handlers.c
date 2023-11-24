@@ -146,6 +146,12 @@ void _aylin_on_xdg_surface_configure(void *data, struct xdg_surface *surface,
 
   struct aylin_shell *shell = data;
 
+  if (!shell->listener)
+      return;
+
+  if (!shell->listener->frame)
+      return;
+
   struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
   shell->listener->frame(shell, event, shell->_userdata);
   free(event);
