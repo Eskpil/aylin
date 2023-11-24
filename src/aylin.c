@@ -183,7 +183,7 @@ int aylin_application_poll(struct aylin_application *app) {
       }
     }
 
-    if (app->listener->process)
+    if (app->listener && app->listener->process)
       app->listener->process(app, app->_userdata);
   }
 
