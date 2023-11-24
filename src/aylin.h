@@ -255,6 +255,9 @@ void _aylin_application_create_output(struct aylin_application *app,
 
 void aylin_application_terminate(struct aylin_application *app);
 
+struct wl_display *
+aylin_application_get_display(struct aylin_application *app);
+
 void aylin_application_destroy(struct aylin_application *app);
 
 // ----------------------- shell ---------------------------------------

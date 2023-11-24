@@ -203,6 +203,11 @@ aylin_application_find_shell_by_surface(struct aylin_application *app,
   return NULL;
 }
 
+struct wl_display *
+aylin_application_get_display(struct aylin_application *app) {
+  return app->display;
+}
+
 void aylin_application_terminate(struct aylin_application *app) {
   app->terminated = true;
 }
