@@ -17,6 +17,22 @@ target_include_directories(
 )
 
 add_executable(
+        "transparent-example"
+        "${CMAKE_CURRENT_SOURCE_DIR}/examples/transparent.c"
+)
+
+target_link_libraries(
+        "transparent-example"
+        ${LIBAYLIN}
+)
+
+target_include_directories(
+        "transparent-example"
+        PUBLIC
+        "src"
+)
+
+add_executable(
         "layer-example"
         "${CMAKE_CURRENT_SOURCE_DIR}/examples/layer.c"
 )

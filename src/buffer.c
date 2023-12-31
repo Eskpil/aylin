@@ -39,7 +39,7 @@ void aylin_destroy_buffer(struct aylin_buffer *buffer) {
   buffer->pool = wl_shm_create_pool(shell->app->shm, buffer->fd, buffer->size);
   buffer->wl_buffer =
       wl_shm_pool_create_buffer(buffer->pool, 0, buffer->width, buffer->height,
-                                buffer->stride, WL_SHM_FORMAT_XRGB8888);
+                                buffer->stride, WL_SHM_FORMAT_ARGB8888);
   wl_shm_pool_destroy(buffer->pool);
 
   wl_surface_attach(shell->surface, buffer->wl_buffer, 0, 0);
