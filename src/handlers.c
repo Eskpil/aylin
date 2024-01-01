@@ -147,10 +147,10 @@ void _aylin_on_xdg_surface_configure(void *data, struct xdg_surface *surface,
   struct aylin_shell *shell = data;
 
   if (!shell->listener)
-      return;
+    return;
 
   if (!shell->listener->frame)
-      return;
+    return;
 
   struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
   shell->listener->frame(shell, event, shell->_userdata);
@@ -214,6 +214,12 @@ void _aylin_on_wl_surface_frame_done(void *data,
 
   struct wl_callback *callback = wl_surface_frame(shell->surface);
   wl_callback_add_listener(callback, &_aylin_wl_surface_frame_listener, data);
+
+  if (!shell->listener)
+    return;
+
+  if (!shell->listener->frame)
+    return;
 
   struct aylin_shell_frame_event *event = calloc(1, sizeof(*event));
   shell->listener->frame(shell, event, shell->_userdata);

@@ -255,8 +255,7 @@ void _aylin_application_create_output(struct aylin_application *app,
 
 void aylin_application_terminate(struct aylin_application *app);
 
-struct wl_display *
-aylin_application_get_display(struct aylin_application *app);
+struct wl_display *aylin_application_get_display(struct aylin_application *app);
 
 void aylin_application_destroy(struct aylin_application *app);
 
@@ -322,6 +321,10 @@ struct aylin_buffer *aylin_shell_create_buffer(struct aylin_shell *window);
 cairo_surface_t *aylin_buffer_create_cairo(struct aylin_buffer *buffer);
 
 void aylin_destroy_buffer(struct aylin_buffer *buffer);
+
+// ----------------------- output -------------------------------------
+
+void aylin_output_destroy(struct aylin_output *output);
 
 #ifdef __cplusplus
 }

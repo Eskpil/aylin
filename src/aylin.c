@@ -213,9 +213,14 @@ void aylin_application_terminate(struct aylin_application *app) {
 }
 
 void aylin_application_destroy(struct aylin_application *app) {
-  struct aylin_shell *shell, *tmp;
-  wl_list_for_each_safe(shell, tmp, &app->shells, link) {
+  struct aylin_shell *shell, *tmp_shell;
+  wl_list_for_each_safe(shell, tmp_shell, &app->shells, link) {
     aylin_shell_destroy(shell);
+  }
+
+  struct aylin_output *output, *tmp_output;
+  wl_list_for_each_safe(output, tmp_output, &app->outputs, link) {
+    aylin_output_destroy(output);
   }
 
   if (app->pointer)
@@ -233,6 +238,9 @@ void aylin_application_destroy(struct aylin_application *app) {
   wl_compositor_destroy(app->compositor);
   wl_registry_destroy(app->registry);
   wl_display_disconnect(app->display);
+
+  if (app->app_id)
+    free(app->app_id);
 
   free(app);
 }
@@ -492,4 +500,29 @@ void aylin_shell_destroy(struct aylin_shell *shell) {
   aylin_application_destroy_independent_surface(shell->surface);
 
   free(shell);
+}
+
+void aylin_output_destroy(struct aylin_output *output) {
+  wl_list_remove(&output->link);
+
+  // struct wl_output *wl_output;
+  //
+  //   int32_t x, y, physical_width, physical_height, subpixel, transform,
+  //   scale,
+  //       width, height, refresh;
+  //   uint32_t flags;
+  //
+  //   char *name, *make, *model, *description;
+  if (output->name)
+    free(output->name);
+  if (output->make)
+    free(output->make);
+  if (output->model)
+    free(output->model);
+  if (output->description)
+    free(output->description);
+
+  wl_output_destroy(output->wl_output);
+
+  free(output);
 }
