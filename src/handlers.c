@@ -11,6 +11,7 @@
 
 #include "aylin.h"
 #include "handlers.h"
+#include "protocols/cursor-shape-client-protocol.h"
 
 void _aylin_on_registry_global(void *data, struct wl_registry *registry,
                                uint32_t name, const char *interface,
@@ -28,8 +29,9 @@ void _aylin_on_registry_global(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, wl_shm_interface.name) == 0) {
     app->shm = wl_registry_bind(registry, name, &wl_shm_interface, version);
   } else if (strcmp(interface, wp_presentation_interface.name) == 0) {
-    app->presentation =
-        wl_registry_bind(registry, name, &wp_presentation_interface, version);
+    //  app->presentation =
+    //      wl_registry_bind(registry, name, &wp_presentation_interface,
+    //      version);
   } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
     app->layer_shell = wl_registry_bind(
         registry, name, &zwlr_layer_shell_v1_interface, version);
@@ -37,6 +39,10 @@ void _aylin_on_registry_global(void *data, struct wl_registry *registry,
     struct wl_output *wl_output =
         wl_registry_bind(registry, name, &wl_output_interface, version);
     _aylin_application_create_output(app, wl_output);
+  } else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) ==
+             0) {
+    app->cursor_shape_mgr = wl_registry_bind(
+        registry, name, &wp_cursor_shape_manager_v1_interface, version);
   } else {
   }
 }
@@ -63,6 +69,8 @@ void _aylin_on_xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel) {
   }
 
   shell->listener->close(shell, shell->_userdata);
+
+  shell->closed = true;
 }
 
 struct state {
@@ -207,6 +215,9 @@ void _aylin_on_wl_surface_frame_done(void *data,
                                      struct wl_callback *wl_callback,
                                      uint32_t time) {
   struct aylin_shell *shell = data;
+
+  if (shell->closed)
+    return;
 
   wl_callback_destroy(wl_callback);
 
@@ -378,6 +389,12 @@ void _aylin_on_wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
   if (!pointer->shell)
     return;
 
+  if (pointer->shell->app->cursor_shape_mgr &&
+      pointer->cursor_shape_device == NULL) {
+    pointer->cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(
+        pointer->shell->app->cursor_shape_mgr, pointer->wl_pointer);
+  }
+
   if (!pointer->shell->listener->pointer_enter)
     return;
 
@@ -386,6 +403,8 @@ void _aylin_on_wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
 
   pointer->x = x;
   pointer->y = y;
+
+  pointer->app->last_enter_serial = serial;
 
   struct aylin_shell_pointer_enter_event *event = calloc(1, sizeof(*event));
 
@@ -404,6 +423,9 @@ void _aylin_on_wl_pointer_leave(void *data, struct wl_pointer *wl_pointer,
                                 uint32_t serial, struct wl_surface *surface) {
   struct aylin_pointer *pointer = data;
   if (!pointer->shell)
+    return;
+
+  if (pointer->shell->closed)
     return;
 
   if (!pointer->shell->listener->pointer_leave)
@@ -581,3 +603,16 @@ void _aylin_on_xdg_popup_done(void *data, struct xdg_popup *xdg_popup) {}
 
 void _aylin_on_xdg_popup_repositioned(void *data, struct xdg_popup *xdg_popup,
                                       uint32_t token) {}
+
+void _aylin_wl_surface_preferred_buffer_scale(void *data,
+                                              struct wl_surface *surface,
+                                              int scale) {}
+
+void _aylin_wl_surface_enter(void *data, struct wl_surface *surface,
+                             struct wl_output *output) {}
+void _aylin_wl_surface_leave(void *data, struct wl_surface *surface,
+                             struct wl_output *output) {}
+
+void _aylin_wl_surface_preferred_buffer_transform(void *data,
+                                                  struct wl_surface *surface,
+                                                  unsigned int transform) {}

@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wayland-client-protocol.h>
 
 #include "aylin.h"
 #include "handlers.h"
+#include "protocols/cursor-shape-client-protocol.h"
 
 #define MAX_EVENTS 128
 
@@ -114,8 +116,11 @@ aylin_application_create(char *app_id,
 
   wl_seat_add_listener(app->seat, &_aylin_wl_seat_listener, app);
   xdg_wm_base_add_listener(app->xdg_wm_base, &_aylin_xdg_wm_base_listener, app);
-  wp_presentation_add_listener(app->presentation,
-                               &_aylin_wp_presentation_listener, app);
+
+  if (app->presentation) {
+    wp_presentation_add_listener(app->presentation,
+                                 &_aylin_wp_presentation_listener, app);
+  }
 
   // wl_seat events.
   wl_display_roundtrip(app->display);
@@ -125,6 +130,74 @@ aylin_application_create(char *app_id,
   app->app_id = strdup(app_id);
 
   return app;
+}
+
+struct aylin_application *aylin_application_create_nopoll(
+    char *app_id, const struct aylin_application_listener *listener,
+    void *_userdata) {
+  struct aylin_application *app = calloc(1, sizeof(*app));
+
+  wl_list_init(&app->shells);
+  wl_list_init(&app->outputs);
+
+  app->terminated = false;
+
+  app->listener = listener;
+  app->_userdata = _userdata;
+
+  app->display = wl_display_connect(NULL);
+  if (!app->display) {
+    return NULL;
+  }
+
+  app->registry = wl_display_get_registry(app->display);
+
+  wl_registry_add_listener(app->registry, &_aylin_registry_handler, app);
+  wl_display_roundtrip(app->display);
+
+  wl_seat_add_listener(app->seat, &_aylin_wl_seat_listener, app);
+  xdg_wm_base_add_listener(app->xdg_wm_base, &_aylin_xdg_wm_base_listener, app);
+  if (app->presentation)
+    wp_presentation_add_listener(app->presentation,
+                                 &_aylin_wp_presentation_listener, app);
+
+  // wl_seat events.
+  wl_display_roundtrip(app->display);
+
+  aylin_application_initialize_input(app);
+
+  app->app_id = strdup(app_id);
+
+  return app;
+}
+
+int aylin_application_get_fd(struct aylin_application *app) {
+  return wl_display_get_fd(app->display);
+}
+
+int aylin_application_flush_display(struct aylin_application *app) {
+  return wl_display_flush(app->display);
+}
+
+int aylin_application_dispatch(struct aylin_application *app) {
+  while (wl_display_prepare_read(app->display) != 0) {
+    int ret = wl_display_dispatch_pending(app->display);
+    if (ret == -1) {
+      return ret;
+    }
+  }
+
+  int ret = wl_display_read_events(app->display);
+  if (ret == -1) {
+    return ret;
+  }
+
+  ret = wl_display_dispatch_pending(app->display);
+  if (ret == -1) {
+    return ret;
+  }
+
+  return 0;
 }
 
 void _aylin_application_create_output(struct aylin_application *app,
@@ -154,7 +227,7 @@ int aylin_application_poll(struct aylin_application *app) {
   }
 
   while (!app->terminated) {
-    wl_display_flush(app->display);
+    aylin_application_flush_display(app);
 
     struct epoll_event events[MAX_EVENTS];
     int nfds = epoll_wait(app->epollfd, events, MAX_EVENTS, 10);
@@ -164,22 +237,9 @@ int aylin_application_poll(struct aylin_application *app) {
 
     for (int n = 0; nfds > n; ++n) {
       if (events[n].data.fd == display_fd) {
-        while (wl_display_prepare_read(app->display) != 0) {
-          int ret = wl_display_dispatch_pending(app->display);
-          if (ret == -1) {
-            return ret;
-          }
-        }
-
-        int ret = wl_display_read_events(app->display);
-        if (ret == -1) {
+        int ret = aylin_application_dispatch(app);
+        if (0 > ret)
           return ret;
-        }
-
-        ret = wl_display_dispatch_pending(app->display);
-        if (ret == -1) {
-          return ret;
-        }
       }
     }
 
@@ -232,8 +292,10 @@ void aylin_application_destroy(struct aylin_application *app) {
 
   xdg_wm_base_destroy(app->xdg_wm_base);
   zwlr_layer_shell_v1_destroy(app->layer_shell);
-  wp_presentation_destroy(app->presentation);
+  if (app->presentation)
+    wp_presentation_destroy(app->presentation);
   wl_shm_destroy(app->shm);
+  wp_cursor_shape_manager_v1_destroy(app->cursor_shape_mgr);
   wl_seat_destroy(app->seat);
   wl_compositor_destroy(app->compositor);
   wl_registry_destroy(app->registry);
@@ -261,6 +323,8 @@ aylin_shell_create_base(struct aylin_application *app,
     return NULL;
   }
 
+  wl_surface_add_listener(shell->surface, &_aylin_wl_surface_listener, shell);
+
   wl_list_insert(&app->shells, &shell->link);
 
   return shell;
@@ -277,6 +341,15 @@ static void aylin_shell_frame(struct aylin_shell *shell) {
     wp_presentation_feedback_add_listener(
         feedback, &_aylin_wp_presentation_feedback_listener, shell);
   }
+}
+
+void aylin_shell_set_cursor_shape(struct aylin_shell *shell,
+                                  enum wp_cursor_shape_device_v1_shape shape) {
+  wp_cursor_shape_device_v1_set_shape(shell->app->pointer->cursor_shape_device,
+                                      shell->app->last_enter_serial, shape);
+}
+void aylin_shell_set_buffer_scale(struct aylin_shell *shell, int scale) {
+  wl_surface_set_buffer_scale(shell->surface, scale);
 }
 
 struct wl_surface *aylin_shell_get_surface(struct aylin_shell *shell) {

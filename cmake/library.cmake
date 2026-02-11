@@ -21,6 +21,16 @@ set(_wayland_protocols_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/src/protocols")
 file(MAKE_DIRECTORY "${_wayland_protocols_src_dir}")
 
 generate_wayland_client_protocol(
+        PROTOCOL_FILE "${_wayland_protocols_xml_dir}/staging/cursor-shape/cursor-shape-v1.xml"
+        CODE_FILE "${_wayland_protocols_src_dir}/cursor-shape-protocol.c"
+        HEADER_FILE "${_wayland_protocols_src_dir}/cursor-shape-client-protocol.h")
+
+generate_wayland_client_protocol(
+        PROTOCOL_FILE "${_wayland_protocols_xml_dir}/stable/tablet/tablet-v2.xml"
+        CODE_FILE "${_wayland_protocols_src_dir}/tablet-protocol.c"
+        HEADER_FILE "${_wayland_protocols_src_dir}/tablet-client-protocol.h")
+
+generate_wayland_client_protocol(
         PROTOCOL_FILE "${_wayland_protocols_xml_dir}/stable/xdg-shell/xdg-shell.xml"
         CODE_FILE "${_wayland_protocols_src_dir}/xdg-shell-protocol.c"
         HEADER_FILE "${_wayland_protocols_src_dir}/xdg-shell-client-protocol.h")
@@ -62,6 +72,8 @@ set(SOURCES
         "${_wayland_protocols_src_dir}/presentation-time-protocol.c"
         "${_wayland_protocols_src_dir}/xdg-decoration-unstable-v1-protocol.c"
         "${_wayland_protocols_src_dir}/wlr-layer-shell-v1-protocol.c"
+        "${_wayland_protocols_src_dir}/cursor-shape-protocol.c"
+        "${_wayland_protocols_src_dir}/tablet-protocol.c"
 )
 
 set(LIBAYLIN "aylin")

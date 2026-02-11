@@ -16,6 +16,7 @@
 #define class _class
 #endif // __cplusplus
 
+#include "protocols/cursor-shape-client-protocol.h"
 #include "protocols/presentation-time-client-protocol.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
 #include "protocols/xdg-shell-client-protocol.h"
@@ -35,10 +36,11 @@ struct aylin_application {
   struct wp_presentation *presentation;
   struct zwlr_layer_shell_v1 *layer_shell;
   struct xdg_wm_base *xdg_wm_base;
+  struct wp_cursor_shape_manager_v1 *cursor_shape_mgr;
 
   char *app_id;
 
-  uint32_t clock_id, seat_capabilities;
+  uint32_t clock_id, seat_capabilities, last_enter_serial;
 
   struct wl_list shells;
   struct wl_list outputs;
@@ -69,6 +71,7 @@ struct aylin_pointer {
   struct wl_pointer *wl_pointer;
   struct aylin_application *app;
   struct aylin_shell *shell;
+  struct wp_cursor_shape_device_v1 *cursor_shape_device;
 
   double x, y;
 };
@@ -120,6 +123,8 @@ struct aylin_shell {
       int32_t x, y;
     } xdg_popup;
   };
+
+  bool closed;
 
   uint32_t frame_rate;
   uint64_t last_frame_time_nanoseconds;
@@ -242,6 +247,14 @@ aylin_application_create(char *app_id,
                          void *userdata);
 int aylin_application_poll(struct aylin_application *app);
 
+struct aylin_application *aylin_application_create_nopoll();
+
+int aylin_application_get_fd(struct aylin_application *app);
+
+int aylin_application_flush_display(struct aylin_application *app);
+
+int aylin_application_dispatch(struct aylin_application *app);
+
 struct aylin_shell *
 aylin_application_find_shell_by_surface(struct aylin_application *app,
                                         struct wl_surface *surface);
@@ -261,12 +274,17 @@ void aylin_application_destroy(struct aylin_application *app);
 
 // ----------------------- shell ---------------------------------------
 
+void aylin_shell_set_cursor_shape(struct aylin_shell *shell,
+                                  enum wp_cursor_shape_device_v1_shape shape);
+
 void aylin_shell_set_dimensions(struct aylin_shell *window, int32_t width,
                                 int32_t height);
 
 struct wl_surface *aylin_shell_get_surface(struct aylin_shell *shell);
 
 uint32_t aylin_shell_get_frame_rate(struct aylin_shell *shell);
+
+void aylin_shell_set_buffer_scale(struct aylin_shell *shell, int scale);
 
 void aylin_shell_destroy(struct aylin_shell *shell);
 

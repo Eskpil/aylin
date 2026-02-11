@@ -31,6 +31,8 @@ static void on_frame(struct aylin_shell *shell,
                      struct aylin_shell_frame_event *event, void *data) {
   struct aylin_buffer *buffer = aylin_shell_create_buffer(shell);
 
+  printf("frame!\n");
+
   cairo_surface_t *cairo_surface = aylin_buffer_create_cairo(buffer);
   cairo_t *cr = cairo_create(cairo_surface);
 
@@ -62,7 +64,9 @@ static void on_key_pressed(struct aylin_shell *shell,
 
 static void on_pointer_motion(struct aylin_shell *shell,
                               struct aylin_shell_pointer_motion_event *event,
-                              void *data) {}
+                              void *data) {
+  aylin_shell_set_cursor_shape(shell, 4);
+}
 
 static void on_pointer_button(struct aylin_shell *shell,
                               struct aylin_shell_pointer_button_event *event,

@@ -1,6 +1,7 @@
 #ifndef AYLIN_HANDLERS_H_
 #define AYLIN_HANDLERS_H_
 
+#include <wayland-client-protocol.h>
 #include <wayland-client.h>
 
 #include "protocols/presentation-time-client-protocol.h"
@@ -20,6 +21,26 @@ void _aylin_on_registry_global_remove(void *data, struct wl_registry *registry,
 static const struct wl_registry_listener _aylin_registry_handler = {
     .global = _aylin_on_registry_global,
     .global_remove = _aylin_on_registry_global_remove,
+};
+
+void _aylin_wl_surface_preferred_buffer_scale(void *data,
+                                              struct wl_surface *surface,
+                                              int scale);
+
+void _aylin_wl_surface_enter(void *data, struct wl_surface *surface,
+                             struct wl_output *output);
+void _aylin_wl_surface_leave(void *data, struct wl_surface *surface,
+                             struct wl_output *output);
+
+void _aylin_wl_surface_preferred_buffer_transform(void *data,
+                                                  struct wl_surface *surface,
+                                                  unsigned int transform);
+
+static const struct wl_surface_listener _aylin_wl_surface_listener = {
+    .enter = _aylin_wl_surface_enter,
+    .leave = _aylin_wl_surface_leave,
+    .preferred_buffer_scale = _aylin_wl_surface_preferred_buffer_scale,
+    .preferred_buffer_transform = _aylin_wl_surface_preferred_buffer_transform,
 };
 
 void _aylin_on_xdg_wm_base_ping(void *data, struct xdg_wm_base *wm_base,
