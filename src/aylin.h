@@ -19,6 +19,7 @@
 #include "protocols/cursor-shape-client-protocol.h"
 #include "protocols/presentation-time-client-protocol.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
+#include "protocols/xdg-decoration-protocol.h"
 #include "protocols/xdg-shell-client-protocol.h"
 
 #ifdef __cplusplus
@@ -26,6 +27,11 @@
 #undef class
 extern "C" {
 #endif // __cplusplus
+
+enum aylin_decoration_mode {
+  aylin_decoration_mode_client = 1,
+  aylin_decoration_mode_server = 2,
+};
 
 struct aylin_application {
   struct wl_display *display;
@@ -37,6 +43,7 @@ struct aylin_application {
   struct zwlr_layer_shell_v1 *layer_shell;
   struct xdg_wm_base *xdg_wm_base;
   struct wp_cursor_shape_manager_v1 *cursor_shape_mgr;
+  struct zxdg_decoration_manager_v1 *decoration_mgr;
 
   char *app_id;
 
@@ -108,6 +115,7 @@ struct aylin_shell {
     struct {
       struct xdg_toplevel *toplevel;
       struct xdg_surface *surface;
+      struct zxdg_toplevel_decoration_v1 *decoration;
 
       char *title;
     } xdg;
@@ -295,6 +303,8 @@ aylin_window_create(struct aylin_application *app,
                     const struct aylin_shell_listener *listener,
                     void *userdata);
 
+void aylin_window_request_dc_mode(struct aylin_shell *window,
+                                  enum aylin_decoration_mode mode);
 void aylin_window_set_title(struct aylin_shell *window, char *title);
 void aylin_window_move(struct aylin_shell *window, uint32_t serial);
 

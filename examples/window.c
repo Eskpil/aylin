@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "aylin.h"
+#include "aylin.h";
 
 #include <cairo/cairo.h>
 
@@ -183,6 +183,7 @@ int main() {
   }
 
   aylin_window_set_title(shell, "example");
+  aylin_window_request_dc_mode(shell, aylin_decoration_mode_server);
 
   int ret = aylin_application_poll(app);
   if (0 > ret) {

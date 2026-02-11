@@ -6,11 +6,21 @@
 
 #include "protocols/presentation-time-client-protocol.h"
 #include "protocols/wlr-layer-shell-unstable-v1-client-protocol.h"
+#include "protocols/xdg-decoration-protocol.h"
 #include "protocols/xdg-shell-client-protocol.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+void _aylin_xdg_toplevel_decoration_configure(
+    void *data, struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
+    uint32_t mode);
+
+static const struct zxdg_toplevel_decoration_v1_listener
+    _aylin_xdg_toplevel_decoration_listener = {
+        .configure = _aylin_xdg_toplevel_decoration_configure,
+};
 
 void _aylin_on_registry_global(void *data, struct wl_registry *registry,
                                uint32_t name, const char *interface,

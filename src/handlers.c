@@ -12,6 +12,7 @@
 #include "aylin.h"
 #include "handlers.h"
 #include "protocols/cursor-shape-client-protocol.h"
+#include "protocols/xdg-shell-client-protocol.h"
 
 void _aylin_on_registry_global(void *data, struct wl_registry *registry,
                                uint32_t name, const char *interface,
@@ -39,6 +40,10 @@ void _aylin_on_registry_global(void *data, struct wl_registry *registry,
     struct wl_output *wl_output =
         wl_registry_bind(registry, name, &wl_output_interface, version);
     _aylin_application_create_output(app, wl_output);
+  } else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) ==
+             0) {
+    app->decoration_mgr = wl_registry_bind(
+        registry, name, &zxdg_decoration_manager_v1_interface, version);
   } else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) ==
              0) {
     app->cursor_shape_mgr = wl_registry_bind(
@@ -132,6 +137,15 @@ void _aylin_on_xdg_toplevel_configure(void *data, struct xdg_toplevel *toplevel,
       }
       break;
     case XDG_TOPLEVEL_STATE_ACTIVATED:
+      if (shell->listener->resize) {
+        struct aylin_shell_resize_event *event = calloc(1, sizeof(*event));
+        event->height = height;
+        event->width = width;
+        event->action = resize;
+
+        shell->listener->resize(shell, event, shell->_userdata);
+        free(event);
+      }
       if (shell->listener->activate) {
         struct aylin_shell_activate_event *event = calloc(1, sizeof(*event));
 
@@ -616,3 +630,12 @@ void _aylin_wl_surface_leave(void *data, struct wl_surface *surface,
 void _aylin_wl_surface_preferred_buffer_transform(void *data,
                                                   struct wl_surface *surface,
                                                   unsigned int transform) {}
+
+void _aylin_xdg_toplevel_decoration_configure(
+    void *data, struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
+    uint32_t mode) {
+  struct aylin_shell *shell = data;
+  assert(shell->kind == AYLIN_SHELL_KIND_XDG);
+
+  // TODO: We should probably fire a callback to the user here.
+}

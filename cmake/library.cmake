@@ -31,6 +31,11 @@ generate_wayland_client_protocol(
         HEADER_FILE "${_wayland_protocols_src_dir}/tablet-client-protocol.h")
 
 generate_wayland_client_protocol(
+        PROTOCOL_FILE "${_wayland_protocols_xml_dir}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml"
+        CODE_FILE "${_wayland_protocols_src_dir}/xdg-decoration.c"
+        HEADER_FILE "${_wayland_protocols_src_dir}/xdg-decoration-protocol.h")
+
+generate_wayland_client_protocol(
         PROTOCOL_FILE "${_wayland_protocols_xml_dir}/stable/xdg-shell/xdg-shell.xml"
         CODE_FILE "${_wayland_protocols_src_dir}/xdg-shell-protocol.c"
         HEADER_FILE "${_wayland_protocols_src_dir}/xdg-shell-client-protocol.h")
@@ -51,11 +56,6 @@ generate_wayland_client_protocol(
         HEADER_FILE "${_wayland_protocols_src_dir}/presentation-time-client-protocol.h")
 
 generate_wayland_client_protocol(
-        PROTOCOL_FILE "${_wayland_protocols_xml_dir}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml"
-        CODE_FILE "${_wayland_protocols_src_dir}/xdg-decoration-unstable-v1-protocol.c"
-        HEADER_FILE "${_wayland_protocols_src_dir}/xdg-decoration-unstable-v1-protocol.h")
-
-generate_wayland_client_protocol(
         PROTOCOL_FILE "${_wlroots_protocols_xml_dir}/unstable/wlr-layer-shell-unstable-v1.xml"
         CODE_FILE "${_wayland_protocols_src_dir}/wlr-layer-shell-v1-protocol.c"
         HEADER_FILE "${_wayland_protocols_src_dir}/wlr-layer-shell-unstable-v1-client-protocol.h")
@@ -70,10 +70,10 @@ set(SOURCES
         "${_wayland_protocols_src_dir}/text-input-unstable-v1-protocol.c"
         "${_wayland_protocols_src_dir}/text-input-unstable-v3-protocol.c"
         "${_wayland_protocols_src_dir}/presentation-time-protocol.c"
-        "${_wayland_protocols_src_dir}/xdg-decoration-unstable-v1-protocol.c"
         "${_wayland_protocols_src_dir}/wlr-layer-shell-v1-protocol.c"
         "${_wayland_protocols_src_dir}/cursor-shape-protocol.c"
         "${_wayland_protocols_src_dir}/tablet-protocol.c"
+        "${_wayland_protocols_src_dir}/xdg-decoration.c"
 )
 
 set(LIBAYLIN "aylin")

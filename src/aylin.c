@@ -7,6 +7,7 @@
 #include "aylin.h"
 #include "handlers.h"
 #include "protocols/cursor-shape-client-protocol.h"
+#include "protocols/xdg-decoration-protocol.h"
 
 #define MAX_EVENTS 128
 
@@ -399,6 +400,20 @@ aylin_window_create(struct aylin_application *app,
   wl_display_roundtrip(app->display);
 
   return shell;
+}
+
+void aylin_window_request_dc_mode(struct aylin_shell *shell,
+                                  enum aylin_decoration_mode mode) {
+  if (shell->app->decoration_mgr == NULL) {
+    printf("error@11: Decoration manager is not initalized!\n");
+  }
+
+  shell->xdg.decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(
+      shell->app->decoration_mgr, shell->xdg.toplevel);
+  zxdg_toplevel_decoration_v1_add_listener(
+      shell->xdg.decoration, &_aylin_xdg_toplevel_decoration_listener, shell);
+
+  zxdg_toplevel_decoration_v1_set_mode(shell->xdg.decoration, mode);
 }
 
 void aylin_window_set_title(struct aylin_shell *shell, char *title) {
